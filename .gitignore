@@ -22,8 +22,12 @@ out/
 debug/
 release/
 
-# Visual Studio Code settings
-.vscode/
+# VS Code files
+.vscode/*.log
+.vscode/*.bak
+.vscode/.easycpp
+.vscode/*.code-workspace
+.vscode/*browse.vc.*
 
 # CMake files
 CMakeCache.txt
@@ -43,3 +47,10 @@ Thumbs.db
 *.user
 *.sublime-project
 *.sublime-workspace
+
+# Ignore offline book
+./book/
+.vscode/browse.vc.db
+.vscode/browse.vc.db-shm
+.vscode/browse.vc.db
+.vscode/browse.vc.db-shm

@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.10)
-project(LearnCppChapter12)
+# This CMakeLists.txt file manages all build targets for the "References and Pointers" chapter.
 
-# Find GTest
-find_package(GTest REQUIRED)
+# To keep things organized, we'll handle each concept (smart_pointers, move_semantics, etc.) here.
 
-# Enable GTest discovery for tests in subdirectories
-include(GoogleTest)
-
-# Add subdirectories for each concept
-# The first concept is smart_pointers
+add_subdirectory(pointers_and_references_basics)
 add_subdirectory(smart_pointers)
+add_subdirectory(linked_list)
+add_subdirectory(move_semantics)
+add_subdirectory(perfect_forwarding)
+add_subdirectory(concurrency)
+add_subdirectory(polymorphism_advanced)
+add_subdirectory(error_handling)
