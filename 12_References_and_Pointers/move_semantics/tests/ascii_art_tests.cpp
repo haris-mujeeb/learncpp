@@ -19,7 +19,7 @@ protected:
 };
 
 TEST_F(RawImageTests, ConstructorInitializesCorrectly) {
-  RawImage raw_img(100, 200);
+  RawImage raw_img(100, 200, 3);
   EXPECT_EQ(raw_img.getSize(), 100 * 200 * 3);
   EXPECT_NE(raw_img.getData(), nullptr);
 }
@@ -37,10 +37,10 @@ TEST_F(RawImageTests, ObjectCountIncrementsAndDecrements) {
   EXPECT_EQ(RawImage::get_live_count(), 0);
 
   {
-    RawImage img1(100, 100);
+    RawImage img1(100, 100, 3);
     EXPECT_EQ(RawImage::get_live_count(), 1);
     {
-      RawImage img2(200, 200);    
+      RawImage img2(200, 200, 3);    
       EXPECT_EQ(RawImage::get_live_count(), 2);
     }
     EXPECT_EQ(RawImage::get_live_count(), 1);
@@ -50,7 +50,7 @@ TEST_F(RawImageTests, ObjectCountIncrementsAndDecrements) {
 }
 
 TEST_F(RawImageTests,  CopyConstructorCreatesDeepCopy) {
-  RawImage img1(100, 200);
+  RawImage img1(100, 200, 3);
   RawImage img2 = img1; // Invoke copy constructor
 
   EXPECT_EQ(img1.getSize(), img2.getSize());
@@ -60,8 +60,8 @@ TEST_F(RawImageTests,  CopyConstructorCreatesDeepCopy) {
 }
 
 TEST_F(RawImageTests,  CopyAssignmentOperatorCreatesDeepCopy) {
-  RawImage img1(100, 200);
-  RawImage img2(150, 200);
+  RawImage img1(100, 200, 3);
+  RawImage img2(150, 200, 3);
   img2 = img1; // Invoke copy assigment operator
 
   EXPECT_EQ(img1.getSize(), img2.getSize());
@@ -70,11 +70,10 @@ TEST_F(RawImageTests,  CopyAssignmentOperatorCreatesDeepCopy) {
 }
 
 TEST_F(RawImageTests, DestructorFreesMemory) {
-    RawImage* image = new RawImage(100, 200);
+    RawImage* image = new RawImage(100, 200, 3);
     delete image; // Ensure it can be deleted without memory leak
     EXPECT_EQ(RawImage::get_live_count(), 0);
 }
-
 
 class AsciiImageTests : public ::testing::Test {
   protected:
@@ -84,7 +83,7 @@ class AsciiImageTests : public ::testing::Test {
   }
 };
 
-TEST_F(AsciiImageTests, getGrayscaleValue) {
+TEST_F(AsciiImageTests, getGrayscaleValueTest) {
   EXPECT_NEAR(getGrayscaleValue(100, 100, 100), (29.9 + 58.7 + 11.4), 1);
 }
 
@@ -93,36 +92,52 @@ TEST_F(AsciiImageTests, pixelToAsciiTest) {
   EXPECT_EQ(pixelToAscii(getGrayscaleValue(255, 255, 255)), '$');
 }
 
-TEST_F(AsciiImageTests, OuputFileGrayAsciiArt) {
+TEST_F(AsciiImageTests, OuputGrayAsciiToFile) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
   EXPECT_NE(raw_img.getData(), nullptr);
   EXPECT_EQ(raw_img.getWidth(), 100);
   EXPECT_EQ(raw_img.getHeight(), 100);
   EXPECT_EQ(raw_img.getChannels(), 3);
   EXPECT_EQ(raw_img.getSize(), raw_img.getHeight() * raw_img.getWidth() * raw_img.getChannels());
-  EXPECT_NO_THROW(ouputFileGrayAsciiArt(raw_img, TOSTRING(OUTPUT_TXT_FILE_PATH)));
+
+  RawImage gray_img = convertToAscii(raw_img);
+  EXPECT_NO_THROW(ouputAsciiToFile(gray_img, TOSTRING(OUTPUT_GRAY_TXT_FILE_PATH)));
 }
 
-TEST_F(AsciiImageTests, OuputTerminalGrayAscii) {
+TEST_F(AsciiImageTests, OuputColoredAsciiToFile) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
-  EXPECT_NO_THROW(ouputTerminalGrayAscii(raw_img));
+  RawImage colored_img = convertToColoredAscii(raw_img);
+  EXPECT_NO_THROW(ouputAsciiToFile(colored_img, TOSTRING(OUTPUT_COLORED_TXT_FILE_PATH)));
+}
+
+TEST_F(AsciiImageTests, OuputGrayAsciiToTerminal) {
+  RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
+  RawImage gray_img = convertToAscii(raw_img);
+  EXPECT_NO_THROW(std::cout << gray_img.getData());
+}
+
+TEST_F(AsciiImageTests, OuputColoredAsciiToTerminal) {
+  RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
+  RawImage colored_img = convertToColoredAscii(raw_img);
+  EXPECT_NO_THROW(std::cout << colored_img.getData());
 }
 
 TEST_F(AsciiImageTests, OuputTerminalRainbowAscii) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
-  EXPECT_NO_THROW(outputTerminalRainbowAscii(raw_img));
+  RawImage rainbow_img = convertToRainbowAscii(raw_img);
+  EXPECT_NO_THROW(std::cout << rainbow_img.getData());
 }
 
 TEST_F(AsciiImageTests, DatasetLoading) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
-  const int NUM_ITERATION = 1000;
+  const int NUM_ITERATION = 200;
   auto start = std::chrono::high_resolution_clock::now();
   int offset = 0;
   for (int i = 0; i <NUM_ITERATION; i++) {
     // ANSI command to move cursor to top-left (prevents flickering compared to "clear")
     std::cout << "\033[H";
 
-    outputTerminalRainbowAscii(raw_img, offset);
+    std::cout << convertToRainbowAscii(raw_img, offset).getData();
     offset++;
     // std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }

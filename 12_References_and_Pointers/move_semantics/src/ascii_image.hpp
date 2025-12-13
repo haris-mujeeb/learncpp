@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <cmath>
+#include <cstring>
 #include "raw_image.hpp"
 
 const char* ASCII_CHARS = " .`,:\"^`_-\'!Ii><~+*jftrxunvczXYUJCLQ0OZmwdbqkhao*#MW&8B%@$";
@@ -16,69 +19,31 @@ char pixelToAscii(int grayValue) {
   return ASCII_CHARS[index];
 }
 
-void ouputFileGrayAsciiArt(const RawImage &img, const char* output_filename) {
-  std::ofstream outputFile(output_filename, std::ios::trunc) ;
+RawImage convertToAscii(const RawImage &source_image) {
+  int width = source_image.getWidth();
+  int height = source_image.getHeight();
+  int channels = 1; // For 1 grayscaled ascii code per pixel
+  int size = source_image.getSize();
+  uint8_t* source_data = source_image.getData();
   
-  if (!outputFile) {
-    throw std::runtime_error("Error opening file!");
-  }
-
-  std::streambuf* originalCoutBuffer = std::cout.rdbuf();
-
-  std::cout.rdbuf(outputFile.rdbuf());
-
-  int width = img.getWidth();
-  int height = img.getHeight();
-  int size = img.getSize();
-  uint8_t* data = img.getData();
+  RawImage target_image(width + height, height, 1); // 1 extra row for '\n'
+  uint8_t* target_data = target_image.getData();
   
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       size_t pixelIndex = (y * width + x) * 3;  // RGB data assumes 3 channels
-      uint8_t r = data[pixelIndex];
-      uint8_t g = data[pixelIndex + 1];
-      uint8_t b = data[pixelIndex + 2];
+      uint8_t r = source_data[pixelIndex];
+      uint8_t g = source_data[pixelIndex + 1];
+      uint8_t b = source_data[pixelIndex + 2];
       
       int grayValue = getGrayscaleValue(r, g, b);
-      char asciiChar = pixelToAscii(grayValue);
-      std::cout << asciiChar; 
+      target_data[pixelIndex / 3] = pixelToAscii(grayValue);
     }
-  std::cout << std::endl; // New line after each row
+    target_data[(y * width) + 1] = '\n'; // New line after each row
   }
-  
-  std::cout.rdbuf(originalCoutBuffer);
+  return target_image;
 }
 
-void ouputTerminalGrayAscii(const RawImage &img) {  
-  int width = img.getWidth();
-  int height = img.getHeight();
-  int size = img.getSize();
-  uint8_t* data = img.getData();
-  
-  std::stringstream buffer;
-
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      size_t pixelIndex = (y * width + x) * 3;  // RGB data assumes 3 channels
-      uint8_t r = data[pixelIndex];
-      uint8_t g = data[pixelIndex + 1];
-      uint8_t b = data[pixelIndex + 2];
-      
-      int grayValue = getGrayscaleValue(r, g, b);
-      char asciiChar = pixelToAscii(grayValue);
-
-
-      buffer << "\033[38;2;" 
-            << (int)r << ";" << (int)g << ";" << (int)b << "m" 
-            << asciiChar; 
-    }
-  
-    buffer << std::endl; // New line after each row
-  }
-  // Reset color at end
-    buffer << "\033[0m";
-  std::cout << buffer.str();
-  }
 
 void getRainbowColor(int width, int height, int scroll_offset, 
                     uint8_t& red, uint8_t& green, uint8_t& blue) {
@@ -89,12 +54,15 @@ void getRainbowColor(int width, int height, int scroll_offset,
   blue = static_cast<uint8_t>(std::sin(freq * i + 4) * 127 + 128);
 }
 
-void outputTerminalRainbowAscii(RawImage& img, int scroll_offset = 0) {
+RawImage convertToRainbowAscii(const RawImage& img, int scroll_offset = 0) {
   int width = img.getWidth();
   int height = img.getHeight();
-  int size = img.getSize();
   uint8_t* data = img.getData();
   
+  // Estimate size: 20 bytes per pixel (ANSI + char) + newline per row + footer + null
+  size_t estimated_size = height * (width * 20 + 1) + 16;
+  RawImage target(estimated_size, 1, 1);
+
   std::stringstream buffer;
 
   for (int y = 0; y < height; ++y) {
@@ -107,7 +75,6 @@ void outputTerminalRainbowAscii(RawImage& img, int scroll_offset = 0) {
       int grayValue = getGrayscaleValue(red, green, blue);
       char asciiChar = pixelToAscii(grayValue);
 
-
       getRainbowColor(x, y, scroll_offset, red, green, blue);
 
       buffer << "\033[38;2;" 
@@ -119,7 +86,70 @@ void outputTerminalRainbowAscii(RawImage& img, int scroll_offset = 0) {
   }
   // Reset color at end
   buffer << "\033[0m";
-  std::cout << buffer.str();
+
+  std::string str = buffer.str();
+  size_t len = str.length();
+  if (len >= target.getSize()) len = target.getSize() - 1;
+  std::memcpy(target.getData(), str.c_str(), len);
+  target.getData()[len] = '\0';
+
+  return target;
+}
+
+RawImage convertToColoredAscii(const RawImage &source_image) {
+  int width = source_image.getWidth();
+  int height = source_image.getHeight();
+  uint8_t* data = source_image.getData();
+  
+  // Estimate size: 20 bytes per pixel (ANSI + char) + newline per row + footer + null
+  size_t estimated_size = height * (width * 20 + 1) + 16;
+  RawImage target(estimated_size, 1, 1);
+
+  std::stringstream buffer;
+
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      size_t pixelIndex = (y * width + x) * 3;  // RGB data assumes 3 channels
+      uint8_t r = data[pixelIndex];
+      uint8_t g = data[pixelIndex + 1];
+      uint8_t b = data[pixelIndex + 2];
+      
+      int grayValue = getGrayscaleValue(r, g, b);
+      char asciiChar = pixelToAscii(grayValue);
+
+      buffer << "\033[38;2;" 
+            << (int)r << ";" << (int)g << ";" << (int)b << "m" 
+            << asciiChar; 
+    }
+  
+    buffer << std::endl; // New line after each row
+  }
+  // Reset color at end
+  buffer << "\033[0m";
+
+  std::string str = buffer.str();
+  size_t len = str.length();
+  if (len >= target.getSize()) len = target.getSize() - 1;
+  std::memcpy(target.getData(), str.c_str(), len);
+  target.getData()[len] = '\0';
+
+  return target;
+}
+
+void ouputAsciiToFile(const RawImage &img, const char* output_filename) {
+  std::ofstream outputFile(output_filename, std::ios::trunc) ;
+  
+  if (!outputFile) {
+    throw std::runtime_error("Error opening file!");
+  }
+
+  std::streambuf* originalCoutBuffer = std::cout.rdbuf();
+
+  std::cout.rdbuf(outputFile.rdbuf());
+
+  std::cout << img.getData();
+  
+  std::cout.rdbuf(originalCoutBuffer);
 }
 
 #endif // ASCII_IMAGE_HPP

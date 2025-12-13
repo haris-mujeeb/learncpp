@@ -15,7 +15,7 @@ private:
   uint8_t* m_data = nullptr;
   static inline int s_live_objects = 0;
 public:
-  RawImage(int w, int h);
+  RawImage(int width, int height, int channels);
   RawImage(const char* filename);
   ~RawImage();
   
@@ -29,7 +29,8 @@ public:
   static int get_live_count() { return s_live_objects; }
 };
 
-RawImage::RawImage(int w, int h) : m_width(w), m_height(h), m_channels(3) {
+RawImage::RawImage(int width, int height, int channels = 3) 
+: m_width(width), m_height(height), m_channels(channels) {
   m_size = static_cast<size_t>(m_width * m_height * m_channels);
   m_data = new uint8_t[m_size];
   s_live_objects++;
@@ -50,7 +51,7 @@ RawImage::RawImage(const char* filename) {
 } 
   
   RawImage::RawImage(const RawImage &other) 
-: m_width(other.m_width), m_height(other.m_height), m_size(other.m_size) {
+: m_width(other.m_width), m_height(other.m_height), m_channels(other.m_channels), m_size(other.m_size) {
   m_data = new uint8_t[m_size];
   std::memcpy(m_data, other.m_data, m_size);
   s_live_objects++;
@@ -64,6 +65,7 @@ RawImage& RawImage::operator= (const RawImage &other)
     // Copy from other
     m_width = other.m_width; 
     m_height = other.m_height;
+    m_channels = other.m_channels;
     m_size = other.m_size;
 
     m_data = new uint8_t[m_size];   // Allocate new memory
