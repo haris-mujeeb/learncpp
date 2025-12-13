@@ -36,7 +36,8 @@ Here's a structured path to advanced C++ concepts. For each, you'll find an init
 ### 2. **Move Semantics & Rvalue References**
 *   **Concept:** Rvalue references (`&&`), `std::move`, Move Constructors, Move Assignment Operators, Copy Elision.
 *   **Challenge:** You have a class with expensive copy operations (e.g., managing a large buffer). How can you optimize transfers of ownership for temporary objects or when explicitly indicating that a resource can be "stolen" from another object?
-*   **Task:** Create a `MyVector` class that mimics a simplified `std::vector`. Implement move constructor and move assignment operator. Write `gtest` cases to confirm that move operations are indeed performed (e.g., by checking if the source object is left in a valid, "empty" state) and that copies are avoided when appropriate.
+*   **Task:** Create a **PNG to ASCII Converter**. You will need two classes: `RawImage` (manages raw pixel bytes) and `AsciiArt` (manages the text output). Both must manage their resources manually (raw pointers) to force you to implement the "Rule of Five" (Destructor, Copy Ctor, Copy Assign, Move Ctor, Move Assign).
+ *   **Tutor's Note:** This project is better than `MyVector` because it deals with *two* distinct heavy resources. You will practice moving the input (image) into the converter and moving the output (text) out of it.
 
 ### 3. **Perfect Forwarding & Variadic Templates**
 *   **Concept:** `std::forward`, Universal References (`T&&`), Template Metaprogramming basics, Parameter Packs.
@@ -85,8 +86,8 @@ Let's maintain a clean and organized `learncpp` directory. I recommend the follo
     │   └───smart_pointers.md                  <-- Your notes for smart pointers
     ├───move_semantics/
     │   ├───src/
-    │   │   ├───my_vector.hpp
-    │   │   └───my_vector.cpp
+    │   │   ├───raw_image.hpp
+    │   │   └───ascii_art.hpp
     │   ├───tests/
     │   │   └───move_semantics_test.cpp
     │   └───move_semantics.md

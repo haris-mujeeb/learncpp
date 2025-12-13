@@ -4,7 +4,6 @@
 # The source paths are relative to this file's location.
 add_executable(smart_pointers_test
     tests/smart_pointer_test.cpp
-    src/unique_array.cpp
 )
 
 # Link the test executable against GTest.
