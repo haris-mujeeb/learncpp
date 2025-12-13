@@ -2,6 +2,7 @@
 #define ASCII_IMAGE_HPP
 
 #include <iostream>
+#include <fstream>
 #include "raw_image.hpp"
 
 const char* ASCII_CHARS = " .`,:\"^`_-\'!Ii><~+*jftrxunvczXYUJCLQ0OZmwdbqkhao*#MW&8B%@$";
@@ -15,7 +16,17 @@ char pixelToAscii(int grayValue) {
   return ASCII_CHARS[index];
 }
 
-void createAsciiArt(const RawImage &img) {
+void createAsciiArt(const RawImage &img, const char* output_filename) {
+  std::ofstream outputFile(output_filename, std::ios::trunc) ;
+  
+  if (!outputFile) {
+    throw std::runtime_error("Error opening file!");
+  }
+
+  std::streambuf* originalCoutBuffer = std::cout.rdbuf();
+
+  std::cout.rdbuf(outputFile.rdbuf());
+
   int width = img.getWidth();
   int height = img.getHeight();
   int size = img.getSize();
@@ -34,6 +45,8 @@ void createAsciiArt(const RawImage &img) {
     }
   std::cout << std::endl; // New line after each row
   }
+  
+  std::cout.rdbuf(originalCoutBuffer);
 }
 
 #endif // ASCII_IMAGE_HPP

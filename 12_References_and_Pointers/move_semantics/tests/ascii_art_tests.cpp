@@ -93,5 +93,10 @@ TEST_F(AsciiImageTests, pixelToAsciiTest) {
 
 TEST_F(AsciiImageTests, PrintAsciiImage) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
-  EXPECT_NO_THROW(createAsciiArt(raw_img));
+  EXPECT_NO_THROW(createAsciiArt(raw_img, TOSTRING(OUTPUT_TXT_FILE_PATH)));
 }
+
+// TEST_F(AsciiImageTests, DatasetLoading) {
+//   RawImage raw_img(TOSTRING());
+//   EXPECT_NO_THROW(createAsciiArt(raw_img));
+// }

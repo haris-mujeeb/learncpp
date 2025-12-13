@@ -12,9 +12,10 @@ add_executable(ascii_art_test
 )
 
 # Define a preprocessor macro that holds the path to the source directory
-# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/capybara.jpeg)
-# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/sunglasses.png)
-target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/light.png)
+# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/capybara.jpeg)
+# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/sunglasses.png)
+target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/light.png)
+target_compile_definitions(ascii_art_test PRIVATE OUTPUT_TXT_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/output/output.txt)
 
 target_link_libraries(ascii_art_test PRIVATE GTest::gtest_main)
 
