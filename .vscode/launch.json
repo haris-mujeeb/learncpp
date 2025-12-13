@@ -45,6 +45,27 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "Debug move_semantics_test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/12_References_and_Pointers/move_semantics/ascii_art_test",
+            "preLaunchTask": "Build Project",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

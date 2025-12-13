@@ -15,6 +15,8 @@ add_executable(ascii_art_test
 # target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/capybara.jpeg)
 # target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/sunglasses.png)
 target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/light.png)
+# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/haris.jpg)
+# target_compile_definitions(ascii_art_test PRIVATE IMAGE_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/images/uni_siegen.jpg)
 target_compile_definitions(ascii_art_test PRIVATE OUTPUT_TXT_FILE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/output/output.txt)
 
 target_link_libraries(ascii_art_test PRIVATE GTest::gtest_main)

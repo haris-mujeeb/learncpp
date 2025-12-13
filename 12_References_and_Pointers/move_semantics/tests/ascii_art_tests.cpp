@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include <chrono>
+#include <thread>
 #include "raw_image.hpp"
 #include "ascii_image.hpp"
 
@@ -91,12 +93,42 @@ TEST_F(AsciiImageTests, pixelToAsciiTest) {
   EXPECT_EQ(pixelToAscii(getGrayscaleValue(255, 255, 255)), '$');
 }
 
-TEST_F(AsciiImageTests, PrintAsciiImage) {
+TEST_F(AsciiImageTests, OuputFileGrayAsciiArt) {
   RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
-  EXPECT_NO_THROW(createAsciiArt(raw_img, TOSTRING(OUTPUT_TXT_FILE_PATH)));
+  EXPECT_NE(raw_img.getData(), nullptr);
+  EXPECT_EQ(raw_img.getWidth(), 100);
+  EXPECT_EQ(raw_img.getHeight(), 100);
+  EXPECT_EQ(raw_img.getChannels(), 3);
+  EXPECT_EQ(raw_img.getSize(), raw_img.getHeight() * raw_img.getWidth() * raw_img.getChannels());
+  EXPECT_NO_THROW(ouputFileGrayAsciiArt(raw_img, TOSTRING(OUTPUT_TXT_FILE_PATH)));
 }
 
-// TEST_F(AsciiImageTests, DatasetLoading) {
-//   RawImage raw_img(TOSTRING());
-//   EXPECT_NO_THROW(createAsciiArt(raw_img));
-// }
+TEST_F(AsciiImageTests, OuputTerminalGrayAscii) {
+  RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
+  EXPECT_NO_THROW(ouputTerminalGrayAscii(raw_img));
+}
+
+TEST_F(AsciiImageTests, OuputTerminalRainbowAscii) {
+  RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
+  EXPECT_NO_THROW(outputTerminalRainbowAscii(raw_img));
+}
+
+TEST_F(AsciiImageTests, DatasetLoading) {
+  RawImage raw_img(TOSTRING(IMAGE_FILE_PATH));
+  const int NUM_ITERATION = 1000;
+  auto start = std::chrono::high_resolution_clock::now();
+  int offset = 0;
+  for (int i = 0; i <NUM_ITERATION; i++) {
+    // ANSI command to move cursor to top-left (prevents flickering compared to "clear")
+    std::cout << "\033[H";
+
+    outputTerminalRainbowAscii(raw_img, offset);
+    offset++;
+    // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> elapsed = end - start;
+
+  // Log the processing time
+  std::cerr << "\n[Benchmarks] Processing Time: " << elapsed.count() << " ms\n";
+}
