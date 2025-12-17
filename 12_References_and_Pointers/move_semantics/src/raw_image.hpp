@@ -21,6 +21,10 @@ public:
   
   RawImage(const RawImage &other);
   RawImage& operator= (const RawImage &other);
+
+  RawImage(RawImage &&other) noexcept;
+  RawImage& operator= (RawImage &&other) noexcept;
+
   size_t getSize() const { return m_size; }
   int getWidth() const { return m_width; }
   int getHeight() const { return m_height;}
@@ -72,6 +76,39 @@ RawImage& RawImage::operator= (const RawImage &other)
     std::memcpy(m_data, other.m_data, m_size);  // Copy data from other
   }
   return *this; // Return current object by reference
+}
+
+RawImage::RawImage(RawImage &&other) noexcept
+: m_width(other.m_width), m_height(other.m_height), m_channels(other.m_channels), m_size(other.m_size), m_data(other.m_data) {
+  // Steal the resources
+  other.m_data = nullptr;
+  other.m_size = 0;
+  other.m_width = 0;
+  other.m_height = 0;
+  other.m_channels = 0;
+  s_live_objects++;
+}
+
+RawImage& RawImage::operator= (RawImage &&other) noexcept {
+  if (this != &other) {
+    // Free existing resource
+    delete[] m_data;
+
+    // Steal resources
+    m_data = other.m_data;
+    m_width = other.m_width;
+    m_height = other.m_height;
+    m_channels = other.m_channels;
+    m_size = other.m_size;
+
+    // Reset source
+    other.m_data = nullptr;
+    other.m_size = 0;
+    other.m_width = 0;
+    other.m_height = 0;
+    other.m_channels = 0;
+  }
+  return *this;
 }
 
 RawImage::~RawImage()

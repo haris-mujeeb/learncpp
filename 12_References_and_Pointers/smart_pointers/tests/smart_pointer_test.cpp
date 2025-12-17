@@ -1,18 +1,21 @@
 #include <gtest/gtest.h>
-#include "../src/unique_array.hpp"
+#include "unique_array.hpp"
 
 TEST(UniqueArrayTest, ConstructorAllocatesSize) {
-    UniqueArray<int> arr(5);
+    UniqueArray arr(5);
     EXPECT_EQ(arr.size(), 5);
 }
 
 TEST(UniqueArrayTest, AccessAndModify) {
-    UniqueArray<int> arr(3);
+    UniqueArray arr(3);
     arr[0] = 10;
     arr[1] = 20;
     arr[2] = 30;
 
     EXPECT_EQ(arr[0], 10);
+
+    arr[1] = arr[0];
+    EXPECT_EQ(arr[1], 10);
     EXPECT_EQ(arr[2], 30);
     
     // Test bounds checking
@@ -21,12 +24,12 @@ TEST(UniqueArrayTest, AccessAndModify) {
 
 TEST(UniqueArrayTest, MoveConstructorTransfersOwnership) {
     // 1. Create source
-    UniqueArray<int> source(10);
+    UniqueArray source(10);
     source[0] = 99;
 
     // 2. Move construct destination from source
     // std::move casts 'source' to an r-value, triggering the move constructor.
-    UniqueArray<int> dest(std::move(source));
+    UniqueArray dest(std::move(source));
 
     // 3. Verify Destination has the resources
     EXPECT_EQ(dest.size(), 10);
@@ -40,10 +43,10 @@ TEST(UniqueArrayTest, MoveConstructorTransfersOwnership) {
 }
 
 TEST(UniqueArrayTest, MoveAssignmentTransfersOwnership) {
-    UniqueArray<int> source(5);
+    UniqueArray source(5);
     source[0] = 42;
 
-    UniqueArray<int> dest(2); // dest has its own memory initially
+    UniqueArray dest(2); // dest has its own memory initially
     
     // Move assignment: dest's original memory is freed, and it takes source's memory.
     dest = std::move(source);

@@ -30,3 +30,4 @@ enable_testing()
 # Add the subdirectories that contain the CMakeLists.txt for each chapter.
 # As you progress, you will add more lines like this.
 add_subdirectory(12_References_and_Pointers)
+add_subdirectory(20_Functions_Memory_Lambdas)

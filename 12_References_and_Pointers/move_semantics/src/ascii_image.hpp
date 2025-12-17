@@ -26,7 +26,7 @@ RawImage convertToAscii(const RawImage &source_image) {
   int size = source_image.getSize();
   uint8_t* source_data = source_image.getData();
   
-  RawImage target_image(width + height, height, 1); // 1 extra row for '\n'
+  RawImage target_image(width + 1, height, 1); // 1 extra char for '\n' per row
   uint8_t* target_data = target_image.getData();
   
   for (int y = 0; y < height; ++y) {
@@ -37,9 +37,9 @@ RawImage convertToAscii(const RawImage &source_image) {
       uint8_t b = source_data[pixelIndex + 2];
       
       int grayValue = getGrayscaleValue(r, g, b);
-      target_data[pixelIndex / 3] = pixelToAscii(grayValue);
+      target_data[y * (width + 1) + x] = pixelToAscii(grayValue);
     }
-    target_data[(y * width) + 1] = '\n'; // New line after each row
+    target_data[y * (width + 1) + width] = '\n'; // New line after each row
   }
   return target_image;
 }

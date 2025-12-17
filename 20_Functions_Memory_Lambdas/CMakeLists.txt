@@ -1,0 +1,5 @@
+add_subdirectory(ellipsis)
+add_subdirectory(function_pointers)
+add_subdirectory(lambdas)
+add_subdirectory(lambdas_captures)
+add_subdirectory(recursion)

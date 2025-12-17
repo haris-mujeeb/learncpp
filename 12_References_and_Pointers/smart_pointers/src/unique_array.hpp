@@ -1,86 +1,83 @@
 #ifndef UNIQUE_ARRAY_HPP
 #define UNIQUE_ARRAY_HPP
 
-#include <memory>    // For std::unique_ptr
-#include <cstddef>   // For size_t
-#include <stdexcept> // For std::out_of_range
-#include <utility>   // For std::move
+#include <memory>
+#include <cstdlib>
+#include <stdexcept>
+#include <utility>
 
-// This custom deleter is crucial. std::unique_ptr<T> calls `delete`, but for
-// an array allocated with `new T[]`, we MUST call `delete[]`.
-template <typename T>
-struct ArrayDeleter {
-  void operator()(T* ptr) const {
-    delete[] ptr;
+// TODO: 1. Define a custom deleter struct (functor) named 'FreeDeleter'.
+// It should overload operator() to take an int* and call std::free(ptr).
+struct FreeDeleter {
+  void operator()(int* ptr) const {
+    std::free(ptr);
   }
 };
 
-template <typename T>
+
 class UniqueArray {
-public:
-  // Default constructor: creates an empty array.
-  UniqueArray() : m_size(0), m_array(nullptr, ArrayDeleter<T>()) {}
-
-  // Constructor: allocates a dynamic array of 'size' elements.
-  explicit UniqueArray(size_t size)
-      : m_size(size),
-        // 1. Allocate with `new T[size]`.
-        // 2. Pass the raw pointer and the custom deleter to the unique_ptr.
-        m_array(size > 0 ? new T[size] : nullptr, ArrayDeleter<T>()) {}
-
-  // Destructor is defaulted. The magic of RAII and unique_ptr is that when
-  // m_array is destroyed, it will automatically invoke our ArrayDeleter.
-  ~UniqueArray() = default;
-
-  // --- Move Semantics ---
-  // A move-only type cannot be copied.
-  UniqueArray(const UniqueArray&) = delete;
-  UniqueArray& operator=(const UniqueArray&) = delete;
-
-  // Move constructor: "steals" the resource from the other object.
-  UniqueArray(UniqueArray&& other) noexcept
-      : m_size(other.m_size), m_array(std::move(other.m_array)) {
-    // Leave the moved-from object in a valid, empty state.
-    other.m_size = 0;
-  }
-
-  // Move assignment operator.
-  UniqueArray& operator=(UniqueArray&& other) noexcept {
-    if (this != &other) {
-      // Steal the resources. The old resource in `this->m_array` is
-      // automatically released by unique_ptr's move assignment.
-      m_array = std::move(other.m_array);
-      m_size = other.m_size;
-      // Leave the moved-from object in a valid, empty state.
-      other.m_size = 0;
-    }
-    return *this;
-  }
-
-  // --- Accessors ---
-  T& operator[](size_t index) {
-    // Correct bounds check: indices are 0 to size-1.
-    if (index >= m_size) {
-      throw std::out_of_range("Index out of bounds");
-    }
-    return m_array.get()[index];
-  }
-
-  const T& operator[](size_t index) const {
-    if (index >= m_size) {
-      throw std::out_of_range("Index out of bounds");
-    }
-    return m_array.get()[index];
-  }
-
-  // size() should be const as it doesn't modify the object.
-  size_t size() const { return m_size; }
-
 private:
-  size_t m_size;
-  // The member should BE a unique_ptr, not a raw pointer TO a unique_ptr.
-  // We also provide our custom deleter as a template argument.
-  std::unique_ptr<T, ArrayDeleter<T>> m_array;
+    size_t m_size;
+    std::unique_ptr<int[], FreeDeleter> m_data;
+    // TODO: 2. Declare a std::unique_ptr member named 'm_data'.
+    // It must hold an array of ints (int[]) and use your FreeDeleter.
+    
+public:
+    // TODO: 3. Implement the Constructor.
+    // - Take 'size' as an argument.
+    // - Allocate memory using std::malloc(size * sizeof(int)).
+    // - If malloc returns null, throw std::bad_alloc().
+    // - Initialize m_data with this raw pointer.
+    UniqueArray(size_t size) : m_size(size) {
+      
+      void* data_ptr = std::malloc(size * sizeof(int));
+      
+      if (data_ptr == nullptr){
+        throw std::bad_alloc();
+      }
+
+      m_data.reset(static_cast<int*>(data_ptr));
+    }
+
+    int& operator[] (size_t index) {
+      if (index >= m_size) {
+        throw std::out_of_range("Index out of bounds");
+      }
+      return m_data[index];
+    }
+
+    size_t size() const {
+      return m_size;
+    }
+    // TODO: 4. Implement Destructor (if needed) or rely on default?
+    // Hint: If m_data is a unique_ptr, do you need a manual destructor? Answer: NO
+    ~UniqueArray() = default;
+
+    // Rule of Five: Explicitly allow moving, because destructor prevented implicit generation
+    UniqueArray(UniqueArray&& other) noexcept
+    : m_size(other.m_size), m_data(std::move(other.m_data)) {
+      other.m_size = 0; // so that when bounds check are checked (e.g.  if (0 >= 0) becomes true),
+                        //  the exception is thrown, 
+    };
+
+    UniqueArray& operator=(UniqueArray&& other) noexcept {
+      if (this != &other) {
+        m_size = other.m_size;
+        m_data = std::move(other.m_data);
+        other.m_size = 0; 
+      }
+      return *this;
+    }
+
+    // TODO: 5. Implement set/get for array access
+    void setValue(size_t index, int value) {
+      m_data[index] = value;
+    }
+    int getValue(size_t index) const {
+      return m_data[index];
+    }
+    
+    size_t getSize() const { return m_size; }
 };
 
 #endif // UNIQUE_ARRAY_HPP
